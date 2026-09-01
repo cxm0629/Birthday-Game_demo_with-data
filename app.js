@@ -11,6 +11,8 @@ const state = {
   playing: null,
   audio: null,
   game: null,
+  pageEntering: true,
+  renderedScreen: null,
 };
 
 function loadProgress() {
@@ -36,7 +38,7 @@ function esc(value) { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;
 function avatar(p) { return `<img class="avatar-img" src="${encodeURI(p.avatar)}" alt="${esc(p.name)}的头像">`; }
 
 function shell(content, {back = null} = {}) {
-  return `<div class="shell">
+  return `<div class="shell${state.pageEntering ? ' page-enter' : ''}">
     <header class="topbar">
       ${back ? `<button class="back" data-action="${back}">← 返回</button>` : '<span class="brand">BIRTHDAY PROJECT</span>'}
       <span class="progress">${completedPeople()} / 8 已认出</span>
@@ -45,7 +47,9 @@ function shell(content, {back = null} = {}) {
 
 function render() {
   const screens = { start: renderStart, select: renderSelect, game: renderGame, messages: renderMessages, voices: renderVoices, ending: renderEnding };
+  state.pageEntering = state.screen !== state.renderedScreen;
   app.innerHTML = screens[state.screen]();
+  state.renderedScreen = state.screen;
 }
 
 function renderStart() {
@@ -127,7 +131,7 @@ function renderChapter1(c) {
 
 function tryC1() {
   const g = state.game;
-  if (!g.selectedPerson || !g.selectedSentence) return;
+  if (!g.selectedPerson || !g.selectedSentence) return render();
   if (g.selectedPerson === g.selectedSentence) {
     g.matched.add(g.selectedPerson); g.feedback = '找到一位！这句话确实属于 TA。'; g.tone = 'good';
     g.selectedPerson = g.selectedSentence = null;
