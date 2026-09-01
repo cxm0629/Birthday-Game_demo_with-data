@@ -1,0 +1,112 @@
+{
+  "chapters": [
+    {
+      "id": 1,
+      "key": "chapter_01",
+      "title": "一句话猜人",
+      "people": [
+        {
+          "id": "01",
+          "name": "最熟悉的陌生人",
+          "avatar": "assets/people/Chapter01/01_陌生人/01_陌生人_Avatar.JPG",
+          "sentence": "在小小的花园里面挖呀挖呀挖",
+          "message": "测试寄语：希望你新的一岁也能一直做喜欢的事情。",
+          "voice": "assets/people/Chapter01/01_陌生人/01_陌生人_Voice.m4a"
+        },
+        {
+          "id": "02",
+          "name": "孤影",
+          "avatar": "assets/people/Chapter01/02_孤影/02_孤影_Avatar.jpg",
+          "sentence": "孤帆远影碧空尽，唯见长江天际流。",
+          "message": "测试寄语：生日快乐，希望今年也有很多值得开心的小事。",
+          "voice": "assets/people/Chapter01/02_孤影/02_孤影_Voice.m4a"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "key": "chapter_02",
+      "title": "关键词猜人",
+      "people": [
+        {
+          "id": "03",
+          "name": "风",
+          "avatar": "assets/people/Chapter02/03_风/03_风_Avatar.JPG",
+          "keywords": [
+            "想自由",
+            "乌龙"
+          ],
+          "message": "测试寄语：生日快乐，愿今年也有很多可爱的惊喜。",
+          "voice": "assets/people/Chapter02/03_风/03_风_Voice.m4a"
+        },
+        {
+          "id": "04",
+          "name": "发糕",
+          "avatar": "assets/people/Chapter02/04_发糕/04_发糕_Avatar.JPG",
+          "keywords": [
+            "上班好累",
+            "上岸"
+          ],
+          "message": "测试寄语：希望新的一岁也甜甜的。",
+          "voice": "assets/people/Chapter02/04_发糕/04_发糕_Voice.m4a"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "key": "chapter_03",
+      "title": "谐音梗",
+      "people": [
+        {
+          "id": "05",
+          "name": "小璐",
+          "avatar": "assets/people/Chapter03/05_小璐/05_小璐_Avatar.JPG",
+          "riddleImage": "assets/people/Chapter03/05_小璐/05_小璐_Clue.png",
+          "answers": [
+            "小璐",
+            "xiaolu"
+          ],
+          "hint": "不许猜陆游",
+          "message": "测试寄语：愿你心如星辰，眼含光芒，岁岁年年皆安好。",
+          "voice": "assets/people/Chapter03/05_小璐/05_小璐_Voice.m4a"
+        },
+        {
+          "id": "06",
+          "name": "CXM",
+          "avatar": "assets/people/Chapter03/06_CXM/06_CXM_Avatar.JPG",
+          "riddleImage": "assets/people/Chapter03/06_CXM/06_CXM_Clue.png",
+          "answers": [
+            "CXM",
+            "cxm"
+          ],
+          "hint": "是三个字母哦",
+          "message": "测试寄语：平安喜乐，诸事顺遂。",
+          "voice": "assets/people/Chapter03/06_CXM/06_CXM_Voice.m4a"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "key": "chapter_04",
+      "title": "相关图片猜人",
+      "people": [
+        {
+          "id": "07",
+          "name": "純",
+          "avatar": "assets/people/Chapter04/07_純/07_純_Avatar.JPG",
+          "image": "assets/people/Chapter04/07_純/07_純_Clue.JPG",
+          "message": "测试寄语：愿时光能缓，愿故人不散。",
+          "voice": "assets/people/Chapter04/07_純/07_純_Voice.m4a"
+        },
+        {
+          "id": "08",
+          "name": "峯哥",
+          "avatar": "assets/people/Chapter04/08_峯哥/08_峯哥_Avatar.JPG",
+          "image": "assets/people/Chapter04/08_峯哥/08_峯哥_Clue.JPG",
+          "message": "测试寄语：愿时光能缓，愿故人不散。",
+          "voice": "assets/people/Chapter04/08_峯哥/08_峯哥_Voice.m4a"
+        }
+      ]
+    }
+  ]
+}
