@@ -13,6 +13,7 @@ const state = {
   game: null,
   pageEntering: true,
   renderedScreen: null,
+  preloadedImages: [],
 };
 
 function loadProgress() {
@@ -35,7 +36,21 @@ function completedPeople() { return [...state.completed].length * 2; }
 function voiceUnlocked() { return state.completed.size === state.data.chapters.length; }
 function shuffle(items) { return [...items].sort(() => Math.random() - .5); }
 function esc(value) { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-function avatar(p) { return `<img class="avatar-img" src="${encodeURI(p.avatar)}" alt="${esc(p.name)}的头像">`; }
+function avatar(p) { return `<img class="avatar-img" src="${encodeURI(p.avatar)}" alt="${esc(p.name)}的头像" loading="eager" decoding="sync">`; }
+
+async function preloadImages(data) {
+  const urls = [...new Set(data.chapters.flatMap(c => c.people.flatMap(p => [p.avatar, p.riddleImage, p.image].filter(Boolean))))];
+  const images = urls.map(url => {
+    const img = new Image();
+    img.src = encodeURI(url);
+    return img;
+  });
+  state.preloadedImages = images;
+  await Promise.all(images.map(img => {
+    if (img.decode) return img.decode().catch(() => undefined);
+    return new Promise(resolve => { img.onload = img.onerror = resolve; });
+  }));
+}
 
 function shell(content, {back = null} = {}) {
   return `<div class="shell${state.pageEntering ? ' page-enter' : ''}">
@@ -169,7 +184,7 @@ function normalizeAnswer(s) { return s.toLowerCase().trim().replace(/\s+/g, '');
 function renderChapter3(c) {
   const g = state.game, p = c.people[g.index];
   return gameHeader(c, '输入你想到的答案；答错可以继续尝试，也可以使用提示。') + `<div class="riddle">
-    <div class="riddle-index">第 ${g.index + 1} / 2 题</div><div class="riddle-text">${p.riddleImage ? `<img class="riddle-image" src="${encodeURI(p.riddleImage)}" alt="第 ${g.index + 1} 题线索图">` : esc(p.riddle)}</div>
+    <div class="riddle-index">第 ${g.index + 1} / 2 题</div><div class="riddle-text">${p.riddleImage ? `<img class="riddle-image" src="${encodeURI(p.riddleImage)}" alt="第 ${g.index + 1} 题线索图" loading="eager" decoding="sync">` : esc(p.riddle)}</div>
     <input class="answer-input" id="answer" autocomplete="off" placeholder="输入昵称或拼音" aria-label="答案" />
     <div class="actions"><button class="primary" data-action="submit-answer">确认答案</button><button class="secondary" data-action="show-hint">提示</button><button class="secondary" data-action="reveal-answer">偷看答案</button></div>
     ${g.hint ? `<p class="hint-box">提示：${esc(p.hint)}</p>` : ''}
@@ -189,7 +204,7 @@ function nextRiddle() { const g = state.game; if (g.index === 1) return finishCh
 
 function renderChapter4(c) {
   const g = state.game;
-  const images = g.images.map(p => `<button class="image-card ${g.selectedImage === p.id ? 'selected' : ''} ${g.matched.has(p.id) ? 'matched' : ''}" data-c4-image="${p.id}" ${g.matched.has(p.id) ? 'disabled' : ''}><img src="${encodeURI(p.image)}" alt="${esc(p.name)}的代表图片"><div class="image-label">选择这张代表图</div></button>`).join('');
+  const images = g.images.map(p => `<button class="image-card ${g.selectedImage === p.id ? 'selected' : ''} ${g.matched.has(p.id) ? 'matched' : ''}" data-c4-image="${p.id}" ${g.matched.has(p.id) ? 'disabled' : ''}><img src="${encodeURI(p.image)}" alt="${esc(p.name)}的代表图片" loading="eager" decoding="sync"><div class="image-label">选择这张代表图</div></button>`).join('');
   const cards = g.cards.map(p => {
     const revealed = g.revealed === p.id || g.matched.has(p.id);
     return `<button class="covered-card ${revealed ? 'revealed' : ''} ${g.matched.has(p.id) ? 'matched' : ''} ${g.hintPerson === p.id ? 'hint' : ''}" data-c4-person="${p.id}" ${g.matched.has(p.id) ? 'disabled' : ''}>${revealed ? `${avatar(p)}<strong>${esc(p.name)}</strong>` : '<span class="cover">✦</span><span>翻开人物牌</span>'}</button>`;
@@ -295,6 +310,7 @@ async function init() {
     if (!response.ok) throw new Error('无法读取人物数据');
     state.data = await response.json();
     if (!Array.isArray(state.data.chapters) || state.data.chapters.length !== 4) throw new Error('人物数据格式不正确');
+    await preloadImages(state.data);
     loadProgress(); render();
   } catch (err) {
     app.innerHTML = `<div class="error"><div><h2>试玩版无法启动</h2><p>${esc(err.message)}</p><p>请通过“启动试玩版.bat”打开，不要直接双击 index.html。</p></div></div>`;
