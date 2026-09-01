@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#191a17">
+  <meta name="description" content="Participant avatar ending animation preview">
+  <title>Avatar Ending Animation Preview</title>
+  <link rel="stylesheet" href="avatar-ending-demo.css">
+</head>
+<body>
+  <main class="demo" id="demo" aria-label="参与者头像聚拢成爱心的生日结尾动画">
+    <div class="ambient" aria-hidden="true"></div>
+    <section class="stage" id="stage">
+      <div class="participants" id="participants"></div>
+      <div class="message" id="message">
+        <p>All the little lights, together</p>
+        <h1>Happy Birthday</h1>
+        <span>愿这些微小的光，安静地陪你走进新的一年。</span>
+      </div>
+      <p class="loading" id="loading">正在等大家来到这里…</p>
+    </section>
+    <div class="controls">
+      <span id="countLabel">Loading participants…</span>
+      <button id="replay" type="button" disabled>↻ Replay Animation</button>
+    </div>
+  </main>
+  <script src="avatar-ending-demo.js"></script>
+</body>
+</html>
+
