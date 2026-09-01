@@ -60,10 +60,49 @@ function shell(content, {back = null} = {}) {
     </header>${content}</div>`;
 }
 
+function syncAttributes(current, next) {
+  for (const attr of [...current.attributes]) {
+    if (!next.hasAttribute(attr.name)) current.removeAttribute(attr.name);
+  }
+  for (const attr of [...next.attributes]) {
+    if (current.getAttribute(attr.name) !== attr.value) current.setAttribute(attr.name, attr.value);
+  }
+  if (current instanceof HTMLInputElement) current.value = next.value;
+}
+
+function patchNode(current, next) {
+  if (!current || !next || current.nodeType !== next.nodeType || current.nodeName !== next.nodeName) {
+    current?.replaceWith(next.cloneNode(true));
+    return;
+  }
+  if (current.nodeType === Node.TEXT_NODE) {
+    if (current.nodeValue !== next.nodeValue) current.nodeValue = next.nodeValue;
+    return;
+  }
+  syncAttributes(current, next);
+  const currentChildren = [...current.childNodes];
+  const nextChildren = [...next.childNodes];
+  const common = Math.min(currentChildren.length, nextChildren.length);
+  for (let i = 0; i < common; i++) patchNode(currentChildren[i], nextChildren[i]);
+  for (let i = currentChildren.length - 1; i >= nextChildren.length; i--) currentChildren[i].remove();
+  for (let i = common; i < nextChildren.length; i++) current.appendChild(nextChildren[i].cloneNode(true));
+}
+
+function updateScreen(markup, replacePage) {
+  if (replacePage || !app.firstElementChild) {
+    app.innerHTML = markup;
+    return;
+  }
+  const template = document.createElement('template');
+  template.innerHTML = markup.trim();
+  patchNode(app.firstElementChild, template.content.firstElementChild);
+}
+
 function render() {
   const screens = { start: renderStart, select: renderSelect, game: renderGame, messages: renderMessages, voices: renderVoices, ending: renderEnding };
-  state.pageEntering = state.screen !== state.renderedScreen;
-  app.innerHTML = screens[state.screen]();
+  const screenChanged = state.screen !== state.renderedScreen;
+  state.pageEntering = screenChanged;
+  updateScreen(screens[state.screen](), screenChanged);
   state.renderedScreen = state.screen;
 }
 
