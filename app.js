@@ -9,6 +9,7 @@ const state = {
   heard: new Set(),
   activeVoiceChapter: 1,
   playing: null,
+  audio: null,
   game: null,
 };
 
@@ -77,6 +78,7 @@ function renderSelect() {
 
 function resetProgress() {
   if (!window.confirm('确定重置全部章节吗？当前通关记录和已读状态都会清除。')) return;
+  stopAudio();
   localStorage.removeItem(STORAGE_KEY);
   state.completed = new Set();
   state.viewed = {};
@@ -221,8 +223,36 @@ function renderMessages() {
 function renderVoices() {
   const c = chapter(state.activeVoiceChapter);
   const tabs = state.data.chapters.map(x => `<button class="chip ${x.id === c.id ? 'active' : ''}" data-voice-chapter="${x.id}">Voice 0${x.id}</button>`).join('');
-  const cards = c.people.map(p => `<button class="voice-card ${state.playing === p.id ? 'playing' : ''}" data-voice-person="${p.id}">${avatar(p)}<strong>${esc(p.name)}</strong><div class="voice-state">${state.playing === p.id ? '▮▮ 正在模拟播放' : state.heard.has(p.id) ? '✓ 已听过' : '▶ 点击播放'}</div></button>`).join('');
-  return shell(`<section class="section-head"><p class="eyebrow">Voice Chapters</p><h2>想亲口告诉你的话</h2><p>当前为试玩版，播放按钮只演示状态，不读取真实音频。</p></section><div class="chapter-tabs">${tabs}</div><div class="voice-grid">${cards}</div><div class="actions"><button class="primary" data-action="go-ending">前往生日结局</button></div>`, {back:'go-select'});
+  const cards = c.people.map(p => `<button class="voice-card ${state.playing === p.id ? 'playing' : ''}" data-voice-person="${p.id}">${avatar(p)}<strong>${esc(p.name)}</strong><div class="voice-state">${state.playing === p.id ? '▮▮ 正在播放 · 点击暂停' : state.heard.has(p.id) ? '✓ 已听过 · 再次播放' : '▶ 点击播放'}</div></button>`).join('');
+  return shell(`<section class="section-head"><p class="eyebrow">Voice Chapters</p><h2>想亲口告诉你的话</h2><p>点击人物即可播放素材包中的音频；切换人物会停止上一段。</p></section><div class="chapter-tabs">${tabs}</div><div class="voice-grid">${cards}</div><div class="actions"><button class="primary" data-action="go-ending">前往生日结局</button></div>`, {back:'go-select'});
+}
+
+function stopAudio() {
+  if (state.audio) {
+    state.audio.pause();
+    state.audio.currentTime = 0;
+  }
+  state.audio = null;
+  state.playing = null;
+}
+
+function playVoice(personId) {
+  if (state.playing === personId) {
+    stopAudio();
+    return render();
+  }
+  stopAudio();
+  const person = state.data.chapters.flatMap(c => c.people).find(p => p.id === personId);
+  if (!person?.voice) return;
+  const audio = new Audio(encodeURI(person.voice));
+  state.audio = audio;
+  state.playing = personId;
+  state.heard.add(personId);
+  saveProgress();
+  audio.addEventListener('ended', () => { if (state.audio === audio) { state.audio = null; state.playing = null; render(); } });
+  audio.addEventListener('error', () => { if (state.audio === audio) { state.audio = null; state.playing = null; window.alert('音频无法播放，请检查文件格式或路径。'); render(); } });
+  render();
+  audio.play().catch(() => { if (state.audio === audio) { state.audio = null; state.playing = null; window.alert('浏览器阻止了播放，请再次点击播放按钮。'); render(); } });
 }
 
 function renderEnding() {
@@ -233,9 +263,9 @@ app.addEventListener('click', e => {
   const el = e.target.closest('button'); if (!el) return;
   const a = el.dataset.action;
   if (a === 'go-start') { state.screen = 'start'; render(); }
-  if (a === 'go-select') { state.screen = 'select'; render(); }
+  if (a === 'go-select') { stopAudio(); state.screen = 'select'; render(); }
   if (a === 'go-voices' && voiceUnlocked()) { state.screen = 'voices'; render(); }
-  if (a === 'go-ending') { state.screen = 'ending'; render(); }
+  if (a === 'go-ending') { stopAudio(); state.screen = 'ending'; render(); }
   if (a === 'reset-progress') resetProgress();
   if (el.dataset.chapter) beginChapter(Number(el.dataset.chapter));
   if (el.dataset.c1Person) { state.game.selectedPerson = el.dataset.c1Person; tryC1(); }
@@ -249,8 +279,8 @@ app.addEventListener('click', e => {
   if (el.dataset.c4Image) { state.game.selectedImage = el.dataset.c4Image; state.game.feedback = '图片已选中，现在翻开一张人物牌。'; state.game.tone = ''; render(); }
   if (el.dataset.c4Person) flipPerson(el.dataset.c4Person);
   if (el.dataset.message) { const id = state.game.chapterId; state.viewed[id] ||= []; if (!state.viewed[id].includes(el.dataset.message)) state.viewed[id].push(el.dataset.message); saveProgress(); render(); }
-  if (el.dataset.voiceChapter) { state.activeVoiceChapter = Number(el.dataset.voiceChapter); state.playing = null; render(); }
-  if (el.dataset.voicePerson) { const id = el.dataset.voicePerson; state.playing = state.playing === id ? null : id; state.heard.add(id); saveProgress(); render(); }
+  if (el.dataset.voiceChapter) { stopAudio(); state.activeVoiceChapter = Number(el.dataset.voiceChapter); render(); }
+  if (el.dataset.voicePerson) playVoice(el.dataset.voicePerson);
 });
 
 app.addEventListener('keydown', e => { if (e.key === 'Enter' && state.screen === 'game' && state.game.chapterId === 3 && document.activeElement.id === 'answer') submitAnswer(); });
