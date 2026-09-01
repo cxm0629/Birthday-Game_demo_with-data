@@ -3,9 +3,9 @@ const starsRoot = document.querySelector('#stars');
 const replay = document.querySelector('#replay');
 
 const COUNT = 24;
-const GATHER_PAUSE = 1100;
-const TRAVEL_MS = 2750;
-const STAGGER_MS = 84;
+const GATHER_PAUSE = 550;
+const TRAVEL_MS = 1375;
+const STAGGER_MS = 42;
 let timers = [];
 
 function random(seed) {
@@ -19,11 +19,10 @@ function starPositions(index) {
   const margin = Math.min(58, width * .1);
   const scatterX = margin + random(index + 2) * (width - margin * 2) - width / 2;
   const scatterY = height * (.17 + random(index + 31) * .43);
-  const angle = index * 2.39996 + random(index + 77) * .34;
-  const outer = Math.min(width, height) * (width < 520 ? .27 : .245);
-  const ring = .58 + (index % 4) * .115 + random(index + 103) * .08;
-  const targetX = Math.cos(angle) * outer * ring;
-  const targetY = Math.sin(angle) * outer * ring * .72;
+  const angle = -Math.PI / 2 + index * (Math.PI * 2 / COUNT);
+  const radius = Math.min(width, height) * (width < 520 ? .29 : .255);
+  const targetX = Math.cos(angle) * radius;
+  const targetY = Math.sin(angle) * radius;
   return { scatterX, scatterY, targetX, targetY };
 }
 
@@ -33,7 +32,7 @@ function buildStars() {
     const {scatterX, scatterY, targetX, targetY} = starPositions(i);
     const star = document.createElement('span');
     star.className = 'star';
-    star.style.cssText = `--sx:${scatterX.toFixed(1)}px;--sy:${scatterY.toFixed(1)}px;--tx:${targetX.toFixed(1)}px;--ty:${targetY.toFixed(1)}px;--delay:${i * STAGGER_MS}ms;--travel:${TRAVEL_MS + random(i + 9) * 620}ms;--size:${(7 + random(i + 45) * 10).toFixed(1)}px;--alpha:${(.68 + random(i + 64) * .28).toFixed(2)};--twinkle:${(1.7 + random(i + 88) * 2.4).toFixed(2)}s;--twinkle-delay:${(-random(i + 120) * 3).toFixed(2)}s`;
+    star.style.cssText = `--sx:${scatterX.toFixed(1)}px;--sy:${scatterY.toFixed(1)}px;--tx:${targetX.toFixed(1)}px;--ty:${targetY.toFixed(1)}px;--delay:${i * STAGGER_MS}ms;--travel:${TRAVEL_MS + random(i + 9) * 310}ms;--size:${(7 + random(i + 45) * 10).toFixed(1)}px;--alpha:${(.68 + random(i + 64) * .28).toFixed(2)};--twinkle:${(1.7 + random(i + 88) * 2.4).toFixed(2)}s;--twinkle-delay:${(-random(i + 120) * 3).toFixed(2)}s`;
     star.innerHTML = '<i class="star-light"><b class="sparkle"></b></i>';
     starsRoot.appendChild(star);
   }
@@ -47,7 +46,7 @@ function play() {
   buildStars();
   void demo.offsetWidth;
   timers.push(setTimeout(() => demo.classList.add('gathering'), GATHER_PAUSE));
-  const finish = GATHER_PAUSE + TRAVEL_MS + STAGGER_MS * (COUNT - 1) + 550;
+  const finish = GATHER_PAUSE + TRAVEL_MS + STAGGER_MS * (COUNT - 1) + 275;
   timers.push(setTimeout(() => demo.classList.add('gathered'), finish));
 }
 
