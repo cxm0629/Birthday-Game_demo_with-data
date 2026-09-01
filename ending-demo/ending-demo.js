@@ -19,10 +19,10 @@ function starPositions(index) {
   const margin = Math.min(58, width * .1);
   const scatterX = margin + random(index + 2) * (width - margin * 2) - width / 2;
   const scatterY = height * (.17 + random(index + 31) * .43);
-  const angle = -Math.PI / 2 + index * (Math.PI * 2 / COUNT);
-  const radius = Math.min(width, height) * (width < 520 ? .29 : .255);
-  const targetX = Math.cos(angle) * radius;
-  const targetY = Math.sin(angle) * radius;
+  const angle = index * (Math.PI * 2 / COUNT);
+  const scale = Math.min(width, height) * (width < 520 ? .0185 : .0165);
+  const targetX = 16 * Math.sin(angle) ** 3 * scale;
+  const targetY = -(13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * scale;
   return { scatterX, scatterY, targetX, targetY };
 }
 
