@@ -71,7 +71,21 @@ function renderSelect() {
       <strong>${voiceUnlocked() ? '声音祝福已解锁' : '声音祝福尚未解锁'}</strong><br>
       <span>${voiceUnlocked() ? '还有一些话，想亲口告诉你。' : `完成四章后解锁 · ${completedPeople()} / 8`}</span>
       ${voiceUnlocked() ? '<div class="actions"><button class="primary" data-action="go-voices">进入 Voice Chapters</button></div>' : ''}
-    </div>`, {back: 'go-start'});
+    </div>
+    <div class="reset-zone"><button class="reset-button" data-action="reset-progress">↻ 重置全部章节</button><p>清除本机保存的通关、寄语和播放状态。</p></div>`, {back: 'go-start'});
+}
+
+function resetProgress() {
+  if (!window.confirm('确定重置全部章节吗？当前通关记录和已读状态都会清除。')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state.completed = new Set();
+  state.viewed = {};
+  state.heard = new Set();
+  state.activeVoiceChapter = 1;
+  state.playing = null;
+  state.game = null;
+  state.screen = 'start';
+  render();
 }
 
 function beginChapter(id) {
@@ -222,6 +236,7 @@ app.addEventListener('click', e => {
   if (a === 'go-select') { state.screen = 'select'; render(); }
   if (a === 'go-voices' && voiceUnlocked()) { state.screen = 'voices'; render(); }
   if (a === 'go-ending') { state.screen = 'ending'; render(); }
+  if (a === 'reset-progress') resetProgress();
   if (el.dataset.chapter) beginChapter(Number(el.dataset.chapter));
   if (el.dataset.c1Person) { state.game.selectedPerson = el.dataset.c1Person; tryC1(); }
   if (el.dataset.c1Sentence) { state.game.selectedSentence = el.dataset.c1Sentence; tryC1(); }
@@ -254,3 +269,4 @@ async function init() {
 
 app.innerHTML = '<div class="loading">正在准备生日线索…</div>';
 init();
+
