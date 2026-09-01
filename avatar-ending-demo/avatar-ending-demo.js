@@ -57,19 +57,33 @@ function evenHeartPoints(count) {
 function layout() {
   const width = innerWidth, height = innerHeight;
   const count = Math.max(nodes.length,1);
-  const baseSize = width < 520 ? 36 : 43;
+  const baseSize = width < 520 ? 18 : 22;
   const heartWidth = Math.min(width * .78, height * .74, 690);
   const heartHeight = Math.min(height * .64, width * .72, 610);
   const normalizedPerimeter = 102;
   const scale = Math.min(heartWidth/32,heartHeight/29);
   const availableSpacing = normalizedPerimeter*scale/count;
-  const avatarSize = Math.max(22,Math.min(baseSize,availableSpacing*.76));
+  const avatarSize = Math.max(14,Math.min(baseSize,availableSpacing*.76));
   const points = evenHeartPoints(count);
+
+  // Keep the initial state calm and legible: participants wait in ID order
+  // in centered rows near the bottom, instead of being randomly scattered.
+  const gap = Math.max(12, avatarSize * .72);
+  const maxPerRow = Math.max(1, Math.floor((width - 40 + gap) / (avatarSize + gap)));
+  const rowCount = Math.ceil(count / maxPerRow);
+  const bottomY = height - Math.max(92, avatarSize * 3.2);
 
   nodes.forEach((node,index) => {
     const p = points[index];
-    const sx = (seeded(index,2)-.5)*(width-avatarSize*2);
-    const sy = height*(.2+seeded(index,5)*.43);
+    const row = Math.floor(index / maxPerRow);
+    const rowStart = row * maxPerRow;
+    const itemsInRow = Math.min(maxPerRow, count - rowStart);
+    const positionInRow = index - rowStart;
+    const rowWidth = itemsInRow * avatarSize + (itemsInRow - 1) * gap;
+    const absoluteX = (width - rowWidth) / 2 + avatarSize / 2 + positionInRow * (avatarSize + gap);
+    const absoluteY = bottomY - (rowCount - 1 - row) * (avatarSize + gap);
+    const sx = absoluteX - width / 2;
+    const sy = absoluteY - height * .44;
     const tx = p.x*scale;
     const ty = p.y*scale;
     node.style.setProperty('--avatar-size',`${avatarSize.toFixed(1)}px`);
