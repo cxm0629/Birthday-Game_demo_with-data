@@ -3,7 +3,7 @@ const starsRoot = document.querySelector('#stars');
 const replay = document.querySelector('#replay');
 
 const COUNT = 24;
-const GATHER_PAUSE = 550;
+const GATHER_PAUSE = 200;
 const TRAVEL_MS = 1375;
 const STAGGER_MS = 42;
 let timers = [];
