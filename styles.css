@@ -94,7 +94,7 @@ h3 { margin: 0; }
 .hint-box { margin-top: 14px; color: var(--muted); font-size: .9rem; line-height: 1.55; }
 
 .image-card { padding: 0; overflow: hidden; }
-.image-card img { display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+.image-card img { display: block; width: 100%; aspect-ratio: 4/3; object-fit: contain; background: #111022; }
 .image-label { padding: 10px 12px; font-size: .78rem; color: var(--muted); }
 .image-card.matched { opacity: .48; border-color: var(--good); cursor: default; }
 .covered-card { text-align: center; min-height: 145px; display: grid; place-content: center; }
@@ -129,3 +129,4 @@ h3 { margin: 0; }
   .primary, .secondary { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
