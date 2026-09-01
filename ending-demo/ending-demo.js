@@ -3,9 +3,9 @@ const starsRoot = document.querySelector('#stars');
 const replay = document.querySelector('#replay');
 
 const COUNT = 24;
-const GATHER_PAUSE = 1350;
-const TRAVEL_MS = 3000;
-const STAGGER_MS = 78;
+const GATHER_PAUSE = 1100;
+const TRAVEL_MS = 2750;
+const STAGGER_MS = 84;
 let timers = [];
 
 function random(seed) {
@@ -18,7 +18,7 @@ function starPositions(index) {
   const height = window.innerHeight;
   const margin = Math.min(58, width * .1);
   const scatterX = margin + random(index + 2) * (width - margin * 2) - width / 2;
-  const scatterY = margin + random(index + 31) * (height * .76 - margin * 2) - height * .46;
+  const scatterY = height * (.17 + random(index + 31) * .43);
   const angle = index * 2.39996 + random(index + 77) * .34;
   const outer = Math.min(width, height) * (width < 520 ? .27 : .245);
   const ring = .58 + (index % 4) * .115 + random(index + 103) * .08;
@@ -33,8 +33,8 @@ function buildStars() {
     const {scatterX, scatterY, targetX, targetY} = starPositions(i);
     const star = document.createElement('span');
     star.className = 'star';
-    star.style.cssText = `--sx:${scatterX.toFixed(1)}px;--sy:${scatterY.toFixed(1)}px;--tx:${targetX.toFixed(1)}px;--ty:${targetY.toFixed(1)}px;--delay:${i * STAGGER_MS}ms;--travel:${TRAVEL_MS + random(i + 9) * 650}ms;--size:${(3.2 + random(i + 45) * 4.2).toFixed(1)}px;--alpha:${(.62 + random(i + 64) * .3).toFixed(2)};--twinkle:${(1.7 + random(i + 88) * 2.4).toFixed(2)}s;--twinkle-delay:${(-random(i + 120) * 3).toFixed(2)}s`;
-    star.innerHTML = '<i class="star-light"></i>';
+    star.style.cssText = `--sx:${scatterX.toFixed(1)}px;--sy:${scatterY.toFixed(1)}px;--tx:${targetX.toFixed(1)}px;--ty:${targetY.toFixed(1)}px;--delay:${i * STAGGER_MS}ms;--travel:${TRAVEL_MS + random(i + 9) * 620}ms;--size:${(7 + random(i + 45) * 10).toFixed(1)}px;--alpha:${(.68 + random(i + 64) * .28).toFixed(2)};--twinkle:${(1.7 + random(i + 88) * 2.4).toFixed(2)}s;--twinkle-delay:${(-random(i + 120) * 3).toFixed(2)}s`;
+    star.innerHTML = '<i class="star-light"><b class="sparkle"></b></i>';
     starsRoot.appendChild(star);
   }
 }
