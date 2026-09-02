@@ -3,8 +3,10 @@ const root = document.querySelector('#participants');
 const replay = document.querySelector('#replay');
 const loading = document.querySelector('#loading');
 const countLabel = document.querySelector('#countLabel');
+const chibi = document.querySelector('#chibi');
 
-const PAUSE_MS = 450;
+const CHIBI_DELAY_MS = 250;
+const AVATAR_START_MS = 1650;
 const TRAVEL_MS = 1850;
 const STAGGER_MS = 95;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -57,13 +59,13 @@ function evenHeartPoints(count) {
 function layout() {
   const width = innerWidth, height = innerHeight;
   const count = Math.max(nodes.length,1);
-  const baseSize = width < 520 ? 18 : 22;
-  const heartWidth = Math.min(width * .78, height * .74, 690);
-  const heartHeight = Math.min(height * .64, width * .72, 610);
+  const baseSize = width < 520 ? 32 : 40;
+  const heartWidth = Math.min(width * .86, height * .78, 720);
+  const heartHeight = Math.min(height * .69, width * .88, 650);
   const normalizedPerimeter = 102;
   const scale = Math.min(heartWidth/32,heartHeight/29);
   const availableSpacing = normalizedPerimeter*scale/count;
-  const avatarSize = Math.max(14,Math.min(baseSize,availableSpacing*.76));
+  const avatarSize = Math.max(20,Math.min(baseSize,availableSpacing*.76));
   const points = evenHeartPoints(count);
 
   // Keep the initial state calm and legible: participants wait in ID order
@@ -119,7 +121,7 @@ function clearRun() {
   runToken++;
   timers.forEach(clearTimeout);timers=[];
   nodes.forEach(node => {node.getAnimations().forEach(a=>a.cancel());node.classList.remove('moving','arrived');});
-  demo.classList.remove('gathered','heart-pulse');
+  demo.classList.remove('chibi-visible','gathered','heart-pulse');
 }
 
 function transform(x,y){return `translate(${x}px,${y}px)`;}
@@ -131,8 +133,9 @@ function play() {
   phase='moving';
   if(reducedMotion.matches){
     nodes.forEach(node=>node.style.transform=transform(node.dataset.tx,node.dataset.ty));
-    phase='gathered';demo.classList.add('gathered');return;
+    phase='gathered';demo.classList.add('chibi-visible','gathered');return;
   }
+  timers.push(setTimeout(()=>{if(token===runToken)demo.classList.add('chibi-visible');},CHIBI_DELAY_MS));
   nodes.forEach((node,index) => {
     const sx=Number(node.dataset.sx),sy=Number(node.dataset.sy),tx=Number(node.dataset.tx),ty=Number(node.dataset.ty);
     node.style.transform=transform(sx,sy);
@@ -144,10 +147,10 @@ function play() {
       node.classList.add('moving');
       const animation=node.animate([{transform:transform(sx,sy)},{transform:transform(cx,cy),offset:.52},{transform:transform(tx,ty)}],{duration:TRAVEL_MS+seeded(index,12)*260,easing:'cubic-bezier(.3,.03,.18,1)',fill:'forwards'});
       animation.finished.then(()=>{if(token===runToken){node.style.transform=transform(tx,ty);node.classList.remove('moving');node.classList.add('arrived');}}).catch(()=>{});
-    },PAUSE_MS+index*STAGGER_MS));
+    },AVATAR_START_MS+index*STAGGER_MS));
   });
-  const finish=PAUSE_MS+(nodes.length-1)*STAGGER_MS+TRAVEL_MS+420;
-  timers.push(setTimeout(()=>{if(token!==runToken)return;phase='gathered';demo.classList.add('heart-pulse');setTimeout(()=>demo.classList.remove('heart-pulse'),1200);demo.classList.add('gathered');},finish));
+  const finish=AVATAR_START_MS+(nodes.length-1)*STAGGER_MS+TRAVEL_MS+420;
+  timers.push(setTimeout(()=>{if(token!==runToken)return;phase='gathered';demo.classList.add('heart-pulse','gathered');timers.push(setTimeout(()=>{if(token===runToken)demo.classList.remove('heart-pulse');},1200));},finish));
 }
 
 replay.addEventListener('click',play);
