@@ -5,8 +5,7 @@ const loading = document.querySelector('#loading');
 const countLabel = document.querySelector('#countLabel');
 const chibi = document.querySelector('#chibi');
 
-const CHIBI_DELAY_MS = 250;
-const AVATAR_START_MS = 1650;
+const AVATAR_START_MS = 420;
 const TRAVEL_MS = 1850;
 const STAGGER_MS = 95;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -60,13 +59,16 @@ function layout() {
   const width = innerWidth, height = innerHeight;
   const count = Math.max(nodes.length,1);
   const baseSize = width < 520 ? 32 : 40;
-  const heartWidth = Math.min(width * .86, height * .78, 720);
-  const heartHeight = Math.min(height * .69, width * .88, 650);
+  const heartWidth = Math.min(width * .92, height * .82, 760);
+  const heartHeight = Math.min(height * .74, width * .94, 690);
   const normalizedPerimeter = 102;
   const scale = Math.min(heartWidth/32,heartHeight/29);
   const availableSpacing = normalizedPerimeter*scale/count;
   const avatarSize = Math.max(20,Math.min(baseSize,availableSpacing*.76));
   const points = evenHeartPoints(count);
+  const chibiSize = chibi.getBoundingClientRect().width;
+  const protectedX = chibiSize / 2 + avatarSize / 2 + Math.max(16, width * .018);
+  const protectedY = chibiSize / 2 + avatarSize / 2 + Math.max(18, height * .018);
 
   // Keep the initial state calm and legible: participants wait in ID order
   // in centered rows near the bottom, instead of being randomly scattered.
@@ -86,8 +88,16 @@ function layout() {
     const absoluteY = bottomY - (rowCount - 1 - row) * (avatarSize + gap);
     const sx = absoluteX - width / 2;
     const sy = absoluteY - height * .44;
-    const tx = p.x*scale;
-    const ty = p.y*scale;
+    let tx = p.x*scale;
+    let ty = p.y*scale;
+    // The chibi is a protected central zone. If a sampled heart point enters
+    // it, push that point outward while preserving its direction and shape.
+    const protectedDistance = (tx/protectedX)**2 + (ty/protectedY)**2;
+    if (protectedDistance < 1) {
+      const outward = 1 / Math.sqrt(Math.max(protectedDistance,.01));
+      tx *= outward;
+      ty *= outward;
+    }
     node.style.setProperty('--avatar-size',`${avatarSize.toFixed(1)}px`);
     node.style.setProperty('--sx',`${sx.toFixed(1)}px`);
     node.style.setProperty('--sy',`${sy.toFixed(1)}px`);
@@ -135,7 +145,10 @@ function play() {
     nodes.forEach(node=>node.style.transform=transform(node.dataset.tx,node.dataset.ty));
     phase='gathered';demo.classList.add('chibi-visible','gathered');return;
   }
-  timers.push(setTimeout(()=>{if(token===runToken)demo.classList.add('chibi-visible');},CHIBI_DELAY_MS));
+  const travelDurations = nodes.map((_,index)=>TRAVEL_MS+seeded(index,12)*260);
+  const revealDuration = Math.max(...travelDurations.map((duration,index)=>index*STAGGER_MS+duration));
+  chibi.style.setProperty('--chibi-reveal',`${revealDuration.toFixed(0)}ms`);
+  timers.push(setTimeout(()=>{if(token===runToken)demo.classList.add('chibi-visible');},AVATAR_START_MS));
   nodes.forEach((node,index) => {
     const sx=Number(node.dataset.sx),sy=Number(node.dataset.sy),tx=Number(node.dataset.tx),ty=Number(node.dataset.ty);
     node.style.transform=transform(sx,sy);
@@ -145,11 +158,11 @@ function play() {
     timers.push(setTimeout(()=>{
       if(token!==runToken)return;
       node.classList.add('moving');
-      const animation=node.animate([{transform:transform(sx,sy)},{transform:transform(cx,cy),offset:.52},{transform:transform(tx,ty)}],{duration:TRAVEL_MS+seeded(index,12)*260,easing:'cubic-bezier(.3,.03,.18,1)',fill:'forwards'});
+      const animation=node.animate([{transform:transform(sx,sy)},{transform:transform(cx,cy),offset:.52},{transform:transform(tx,ty)}],{duration:travelDurations[index],easing:'cubic-bezier(.3,.03,.18,1)',fill:'forwards'});
       animation.finished.then(()=>{if(token===runToken){node.style.transform=transform(tx,ty);node.classList.remove('moving');node.classList.add('arrived');}}).catch(()=>{});
     },AVATAR_START_MS+index*STAGGER_MS));
   });
-  const finish=AVATAR_START_MS+(nodes.length-1)*STAGGER_MS+TRAVEL_MS+420;
+  const finish=AVATAR_START_MS+revealDuration+120;
   timers.push(setTimeout(()=>{if(token!==runToken)return;phase='gathered';demo.classList.add('heart-pulse','gathered');timers.push(setTimeout(()=>{if(token===runToken)demo.classList.remove('heart-pulse');},1200));},finish));
 }
 
