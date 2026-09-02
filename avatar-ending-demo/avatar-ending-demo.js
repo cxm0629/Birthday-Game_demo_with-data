@@ -67,8 +67,9 @@ function layout() {
   const avatarSize = Math.max(20,Math.min(baseSize,availableSpacing*.76));
   const points = evenHeartPoints(count);
   const chibiSize = chibi.getBoundingClientRect().width;
-  const protectedX = chibiSize / 2 + avatarSize / 2 + Math.max(16, width * .018);
-  const protectedY = chibiSize / 2 + avatarSize / 2 + Math.max(18, height * .018);
+  const safetyGap = Math.max(48, Math.min(width,height) * .055);
+  const protectedX = chibiSize / 2 + avatarSize / 2 + safetyGap;
+  const protectedY = chibiSize / 2 + avatarSize / 2 + safetyGap;
 
   // Keep the initial state calm and legible: participants wait in ID order
   // in centered rows near the bottom, instead of being randomly scattered.
@@ -90,11 +91,12 @@ function layout() {
     const sy = absoluteY - height * .44;
     let tx = p.x*scale;
     let ty = p.y*scale;
-    // The chibi is a protected central zone. If a sampled heart point enters
-    // it, push that point outward while preserving its direction and shape.
-    const protectedDistance = (tx/protectedX)**2 + (ty/protectedY)**2;
-    if (protectedDistance < 1) {
-      const outward = 1 / Math.sqrt(Math.max(protectedDistance,.01));
+    // Use a rectangular exclusion zone rather than an ellipse so that even
+    // the artwork's corners and outer glow remain completely unobstructed.
+    if (Math.abs(tx) < protectedX && Math.abs(ty) < protectedY) {
+      const toVerticalEdge = protectedX / Math.max(Math.abs(tx),.01);
+      const toHorizontalEdge = protectedY / Math.max(Math.abs(ty),.01);
+      const outward = Math.min(toVerticalEdge,toHorizontalEdge) * 1.03;
       tx *= outward;
       ty *= outward;
     }
